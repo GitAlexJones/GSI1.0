@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bull Kelp GSI Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f5f0; --card:#ffffff; --ink:#1d2a24; --muted:#5d6b64; --line:#dde3dc;
+    --kelp:#3f6b3a; --kelp-d:#2b4c28; --kelp-l:#e6efe3; --amber:#b9781f; --amber-l:#fbf1e1;
+    --red:#a3392b; --red-l:#f8e6e3; --sea:#1f5f73;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5}
+  header{background:linear-gradient(135deg,#1f3d2b,#2f5a3b 60%,#1f5f73);color:#fff;padding:28px 20px 22px}
+  header .wrap{max-width:1100px;margin:0 auto}
+  h1{font-family:Fraunces,serif;font-size:28px;margin:0 0 4px;letter-spacing:-.01em}
+  header p{margin:0;opacity:.85;max-width:680px}
+  nav{display:flex;gap:6px;margin-top:18px;flex-wrap:wrap}
+  nav button{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:999px;font:500 14px Inter;cursor:pointer}
+  nav button.active{background:#fff;color:var(--kelp-d)}
+  main{max-width:1100px;margin:0 auto;padding:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px}
+  h2{font-family:Fraunces,serif;font-size:20px;margin:0 0 4px}
+  .step{display:inline-block;background:var(--kelp);color:#fff;font:600 12px Inter;padding:2px 9px;border-radius:999px;margin-right:8px;vertical-align:2px}
+  .hint{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+  th{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+  td.num,th.num{text-align:right;font-family:"JetBrains Mono",monospace;font-size:13.5px}
+  input[type=text],input[type=number],select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;color:var(--ink)}
+  input[type=number]{width:78px;font-family:"JetBrains Mono",monospace;font-size:13.5px}
+  input.bad{border-color:var(--red);background:var(--red-l)}
+  input.name{width:150px;font-weight:500}
+  .q{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-left:4px}
+  .btn{font:500 14px Inter;border-radius:8px;padding:7px 13px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+  .btn:hover{background:var(--kelp-l)}
+  .btn.primary{background:var(--kelp);border-color:var(--kelp);color:#fff}
+  .btn.primary:hover{background:var(--kelp-d)}
+  .btn.x{padding:2px 8px;color:var(--muted);border-color:transparent;background:transparent}
+  .btn.x:hover{color:var(--red);background:var(--red-l)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .geno{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .gbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .gbox b{display:block;font-size:13px;margin-bottom:6px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;border:0;background:#fff;padding:6px 0;font:600 13px "JetBrains Mono",monospace;cursor:pointer;color:var(--ink);border-right:1px solid var(--line)}
+  .seg button:last-child{border-right:0;font-family:Inter;font-weight:500;font-size:12px;color:var(--muted)}
+  .seg button.on{background:var(--kelp);color:#fff}
+  .seg button:last-child.on{background:#8a948f;color:#fff}
+  .formula{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:5px}
+  .winner{display:flex;gap:16px;align-items:center;background:var(--kelp-l);border:1px solid #c6d8c1;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .winner .big{font-family:Fraunces,serif;font-size:24px;color:var(--kelp-d)}
+  .tie{background:var(--amber-l);border-color:#ecd3a8}
+  tr.top td{background:#f4f8f2}
+  .bar{height:8px;border-radius:4px;background:var(--kelp);min-width:2px}
+  .barwrap{width:120px;background:#edf0ec;border-radius:4px}
+  details.work{margin-top:14px}
+  details.work summary{cursor:pointer;font-weight:600;color:var(--sea)}
+  .worklist{font-family:"JetBrains Mono",monospace;font-size:13px;background:#f8faf7;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:10px;overflow-x:auto;white-space:nowrap}
+  .worklist div{padding:3px 0}
+  .warn{background:var(--amber-l);border:1px solid #ecd3a8;color:#6b4610;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:10px}
+  .err{background:var(--red-l);border:1px solid #e9c2bb;color:var(--red);border-radius:10px;padding:10px 12px;font-size:14px}
+  .pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:#edf0ec;color:var(--muted);margin-left:6px}
+  .practice{border:2px dashed #c6d8c1;border-radius:12px;padding:14px;margin-bottom:14px;background:#fbfdfa}
+  .choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .choices button.right{background:var(--kelp);color:#fff;border-color:var(--kelp)}
+  .choices button.wrong{background:var(--red-l);color:var(--red);border-color:#e9c2bb}
+  .ref h3{font-family:Fraunces,serif;font-size:18px;margin:18px 0 6px}
+  .ref h3:first-child{margin-top:0}
+  .ref .rule{background:var(--kelp-l);border-left:4px solid var(--kelp);padding:10px 14px;border-radius:0 8px 8px 0;font-family:"JetBrains Mono",monospace;font-size:14px;margin:8px 0}
+  .ref .trap{background:var(--amber-l);border-left:4px solid var(--amber);padding:10px 14px;border-radius:0 8px 8px 0;margin:8px 0}
+  .ref ol li{margin-bottom:6px}
+  .hidden{display:none!important}
+  .mini{width:100%}
+  .calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px}
+  .calc .cell{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+  .calc .cell .lab{font-size:12px;color:var(--muted)}
+  .calc .cell .val{font-family:"JetBrains Mono",monospace;font-size:20px;font-weight:600;color:var(--kelp-d)}
+  .calc .cell .f{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+  @media (max-width:600px){h1{font-size:23px}main{padding:12px}.card{padding:15px}.barwrap{width:60px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>🧬 Bull Kelp GSI Calculator</h1>
+  <p>Enter baseline allele frequencies and a mystery kelp's genotype. The calculator works through Hardy-Weinberg probabilities, multiplies across loci, and assigns the sample to the most likely region, showing every step.</p>
+  <nav>
+    <button data-tab="calc" class="active">Calculator</button>
+    <button data-tab="quick">Single-locus helper</button>
+    <button data-tab="ref">Tip Sheet</button>
+  </nav>
+</div></header>
+
+<main>
+<!-- CALCULATOR -->
+<section id="tab-calc">
+  <div class="card">
+    <h2><span class="step">Step 1</span>Baseline allele frequencies</h2>
+    <p class="hint">Enter <b>p</b> (frequency of the first allele, A) for each region and locus. <b>q = 1 − p</b> is filled in for you. If your table lists q instead of p, use the toggle below.</p>
+    <div class="row" style="margin:0 0 12px">
+      <label style="font-size:14px">My table gives:
+        <select id="freqMode"><option value="p">p (first allele, A)</option><option value="q">q (second allele, a)</option></select>
+      </label>
+    </div>
+    <div class="scroll"><table id="baseTable"></table></div>
+    <div class="row">
+      <button class="btn" id="addRegion">+ Region</button>
+      <button class="btn" id="addLocus">+ Locus</button>
+      <span style="flex:1"></span>
+      <button class="btn" id="loadExample">Load example</button>
+      <button class="btn" id="clearAll">Blank table</button>
+    </div>
+    <div id="baseErr"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">Step 2</span>Mystery kelp genotype</h2>
+    <p class="hint">Pick the genotype at each locus. Choose <i>skip</i> for any locus that wasn't tested; it's left out of the product.</p>
+    <div class="geno" id="genoBox"></div>
+    <div class="row">
+      <button class="btn" id="randGeno">🎲 Random genotype</button>
+      <button class="btn" id="practiceBtn">🎯 Practice mode</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="step">Steps 3–4</span>Likelihoods and assignment</h2>
+    <p class="hint">Each region's likelihood is the product of its per-locus genotype probabilities. The highest likelihood wins.</p>
+    <div id="practiceBox" class="practice hidden"></div>
+    <div id="results"></div>
+  </div>
+</section>
+
+<!-- QUICK -->
+<section id="tab-quick" class="hidden">
+  <div class="card">
+    <h2>Single-locus Hardy-Weinberg helper</h2>
+    <p class="hint">Type one p value to see all three genotype probabilities. Handy for checking a single cell of your work.</p>
+    <div class="row" style="margin:0">
+      <label>p = <input type="number" id="qp" min="0" max="1" step="0.01" value="0.3"></label>
+      <span id="qq" class="q" style="font-size:14px"></span>
+    </div>
+    <div class="calc" id="qcalc"></div>
+    <p class="hint" style="margin-top:12px" id="qcheck"></p>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="tab-ref" class="hidden">
+  <div class="card ref">
+    <h3>Step 1: Allele frequencies (p and q)</h3>
+    <p>Each locus has two alleles, A and a. <b>p</b> is the frequency of A; <b>q</b> is the frequency of a. They always add to 1.</p>
+    <div class="rule">p + q = 1 &nbsp;⇒&nbsp; q = 1 − p</div>
+    <p>Example: if p = 0.80, then q = 0.20.</p>
+
+    <h3>Step 2: Genotype probability at one locus (Hardy-Weinberg)</h3>
+    <p>Bull kelp sporophytes are diploid, with two copies of each gene.</p>
+    <div class="scroll"><table>
+      <tr><th>Genotype</th><th>Meaning</th><th>Formula</th><th class="num">p = 0.3, q = 0.7</th></tr>
+      <tr><td><b>AA</b></td><td>Two copies of A</td><td class="num" style="text-align:left">p²</td><td class="num">0.09</td></tr>
+      <tr><td><b>Aa</b></td><td>One A, one a</td><td class="num" style="text-align:left">2pq</td><td class="num">0.42</td></tr>
+      <tr><td><b>aa</b></td><td>Two copies of a</td><td class="num" style="text-align:left">q²</td><td class="num">0.49</td></tr>
+    </table></div>
+    <div class="trap">⚠️ <b>The #1 trap:</b> don't forget the <b>2</b> in 2pq. A heterozygote can get A from mom and a from dad, <i>or</i> a from mom and A from dad, so there are two ways to make one.</div>
+
+    <h3>Step 3: Combine across loci</h3>
+    <p>Assuming loci are independent (linkage equilibrium), <b>multiply</b> the per-locus probabilities:</p>
+    <div class="rule">Region likelihood = P(locus 1) × P(locus 2) × P(locus 3) × …</div>
+
+    <h3>Step 4: Compare and assign</h3>
+    <p>Repeat Steps 2–3 for every baseline region. The region with the <b>highest</b> likelihood is the most likely origin.</p>
+
+    <h3>🛑 Pro tips</h3>
+    <ol>
+      <li><b>Use the right row.</b> Pull p and q from the region you're calculating; don't mix Alaska's numbers with Oregon's.</li>
+      <li><b>Watch your decimals.</b> Products of small numbers get tiny fast. Keep 3–4 significant figures, or use scientific notation, so nothing rounds to 0.00.</li>
+      <li><b>Labels don't change the math.</b> A/a, 1/2 or B/b: p is always the first allele listed and q the second.</li>
+    </ol>
+  </div>
+</section>
+</main>
+
+<script>
+(function(){
+  // ---------- state ----------
+  const EXAMPLE = {
+    loci:["Locus 1","Locus 2","Locus 3","Locus 4"],
+    regions:[
+      {name:"Alaska",            p:[0.80,0.25,0.60,0.10]},
+      {name:"Outer WA",          p:[0.55,0.40,0.35,0.30]},
+      {name:"Inner Salish Sea",  p:[0.30,0.70,0.20,0.65]},
+      {name:"Oregon/California", p:[0.15,0.50,0.75,0.45]}
+    ],
+    geno:["Aa","AA","aa","Aa"]
+  };
+  let S = load() || clone(EXAMPLE);
+  let mode = "p";             // whether entered values are p or q
+  let practice = null;        // {guess:null}
+
+  function clone(o){return JSON.parse(JSON.stringify(o))}
+  function save(){try{localStorage.setItem("gsi-state",JSON.stringify(S))}catch(e){}}
+  function load(){try{const s=JSON.parse(localStorage.getItem("gsi-state"));if(s&&s.loci&&s.regions&&s.geno)return s}catch(e){}return null}
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  // ---------- number formatting ----------
+  function fmt(x){
+    if(x===null||isNaN(x))return "—";
+    if(x===0)return "0";
+    if(Math.abs(x)>=0.001)return trim(x.toPrecision(4));
+    return x.toExponential(3).replace("e","×10^").replace(/\^(-?)\+?(\d+)/,(m,s,d)=>"^"+s+d);
+  }
+  function fmtHTML(x){
+    const s=fmt(x);
+    return s.includes("×10^")?s.replace(/×10\^(-?\d+)/,"×10<sup>$1</sup>"):s;
+  }
+  function trim(s){return s.includes("e")?s:s.replace(/(\.\d*?)0+$/,"$1").replace(/\.$/,"")}
+  function r(x){return trim((+x).toFixed(4))}
+
+  // ---------- core math ----------
+  function pOf(region,i){
+    const v=region.p[i];
+    if(v===""||v===null||isNaN(v))return null;
+    return mode==="p"?+v:1-(+v);
+  }
+  function genoProb(g,p){
+    const q=1-p;
+    if(g==="AA")return {v:p*p, f:`p² = ${r(p)}²`};
+    if(g==="Aa")return {v:2*p*q, f:`2pq = 2 × ${r(p)} × ${r(q)}`};
+    if(g==="aa")return {v:q*q, f:`q² = ${r(q)}²`};
+    return null;
+  }
+  function compute(){
+    const used=S.geno.map((g,i)=>g!=="skip"?i:-1).filter(i=>i>=0);
+    const rows=S.regions.map(reg=>{
+      let L=1, ok=true; const parts=[];
+      used.forEach(i=>{
+        const p=pOf(reg,i);
+        if(p===null||p<0||p>1){ok=false;parts.push(null);return}
+        const gp=genoProb(S.geno[i],p);
+        parts.push({i,p,...gp}); L*=gp.v;
+      });
+      return {name:reg.name,L:ok?L:null,parts};
+    });
+    return {used,rows};
+  }
+
+  // ---------- render: baseline table ----------
+  function renderBase(){
+    const lbl=mode==="p"?"p":"q", other=mode==="p"?"q":"p";
+    let h="<tr><th>Region</th>";
+    S.loci.forEach((l,i)=>{h+=`<th><input type="text" class="name" style="width:110px" data-locus="${i}" value="${esc(l)}">${S.loci.length>1?` <button class="btn x" data-dellocus="${i}" title="Remove locus">✕</button>`:""}</th>`});
+    h+="<th></th></tr>";
+    S.regions.forEach((reg,ri)=>{
+      h+=`<tr><td><input type="text" class="name" data-region="${ri}" value="${esc(reg.name)}"></td>`;
+      S.loci.forEach((_,li)=>{
+        const v=reg.p[li]; const bad=v!==""&&(isNaN(v)||v<0||v>1);
+        const o=(v===""||isNaN(v)||bad)?"":`${other} = ${r(1-v)}`;
+        h+=`<td style="white-space:nowrap">${lbl} <input type="number" step="0.01" min="0" max="1" class="${bad?"bad":""}" data-r="${ri}" data-l="${li}" value="${v===""?"":v}"><span class="q">${o}</span></td>`;
+      });
+      h+=`<td>${S.regions.length>1?`<button class="btn x" data-delregion="${ri}" title="Remove region">✕</button>`:""}</td></tr>`;
+    });
+    $("baseTable").innerHTML=h;
+  }
+
+  // ---------- render: genotype selector ----------
+  function renderGeno(){
+    $("genoBox").innerHTML=S.loci.map((l,i)=>{
+      const g=S.geno[i];
+      const f={AA:"use p²",Aa:"use 2pq",aa:"use q²",skip:"left out"}[g];
+      return `<div class="gbox"><b>${esc(l)}</b><div class="seg">${["AA","Aa","aa","skip"].map(o=>`<button data-g="${i}" data-v="${o}" class="${g===o?"on":""}">${o}</button>`).join("")}</div><div class="formula">${f}</div></div>`;
+    }).join("");
+  }
+
+  // ---------- render: results ----------
+  function renderResults(){
+    const {used,rows}=compute();
+    const out=$("results");
+    if(!used.length){out.innerHTML=`<div class="warn">Pick a genotype for at least one locus to see results.</div>`;renderPractice(null);return}
+    const bad=rows.filter(x=>x.L===null);
+    if(bad.length){out.innerHTML=`<div class="err">Missing or invalid frequencies for: <b>${bad.map(b=>esc(b.name)).join(", ")}</b>. Every value must be between 0 and 1.</div>`;renderPractice(null);return}
+
+    const max=Math.max(...rows.map(x=>x.L));
+    const total=rows.reduce((a,x)=>a+x.L,0);
+    const winners=rows.filter(x=>max>0&&Math.abs(x.L-max)<=max*1e-9);
+    const sorted=[...rows].sort((a,b)=>b.L-a.L);
+
+    if(practice){renderPractice({rows,winners,max});}
+    const hide=practice&&!practice.revealed;
+
+    let h="";
+    if(hide){
+      h=`<div class="warn">Results are hidden in practice mode. Work it out by hand, then pick your answer above.</div>`;
+      out.innerHTML=h;return;
+    }
+    if(max===0){
+      h+=`<div class="winner tie"><div>Every region has a likelihood of 0. At least one locus has a genotype that requires an allele with frequency 0 in every region, so the sample can't be assigned.</div></div>`;
+    }else if(winners.length>1){
+      h+=`<div class="winner tie"><div><div style="font-size:13px;color:var(--muted)">Tie</div><div class="big">${winners.map(w=>esc(w.name)).join(" = ")}</div><div style="font-size:14px">These regions have equal likelihood (${fmtHTML(max)}). Test more loci to separate them.</div></div></div>`;
+    }else{
+      const w=winners[0]; const second=sorted[1];
+      const ratio=second&&second.L>0?w.L/second.L:null;
+      h+=`<div class="winner"><div style="font-size:34px">🌊</div><div><div style="font-size:13px;color:var(--muted)">Most likely origin</div><div class="big">${esc(w.name)}</div><div style="font-size:14px">Likelihood ${fmtHTML(w.L)}${ratio?` · ${trim(ratio.toPrecision(3))}× more likely than ${esc(second.name)}`:second?` · every other region has likelihood 0`:""}</div></div></div>`;
+    }
+
+    h+=`<div class="scroll"><table><tr><th>Rank</th><th>Region</th>`;
+    used.forEach(i=>{h+=`<th class="num">${esc(S.loci[i])}<br><span style="font-weight:400">${S.geno[i]}</span></th>`});
+    h+=`<th class="num">Likelihood</th><th>Relative</th><th class="num" title="Share of the total likelihood, assuming each region is equally likely beforehand">Share <span class="pill">equal priors</span></th></tr>`;
+    sorted.forEach((x,k)=>{
+      const top=winners.includes(x)&&max>0;
+      h+=`<tr class="${top?"top":""}"><td>${k+1}${top?" 🏆":""}</td><td><b>${esc(x.name)}</b></td>`;
+      x.parts.forEach(pt=>{h+=`<td class="num">${fmtHTML(pt.v)}</td>`});
+      const rel=max>0?x.L/max:0;
+      h+=`<td class="num"><b>${fmtHTML(x.L)}</b></td><td><div class="barwrap"><div class="bar" style="width:${Math.max(rel*100,1)}%"></div></div></td><td class="num">${total>0?(x.L/total*100).toFixed(1)+"%":"—"}</td></tr>`;
+    });
+    h+=`</table></div>`;
+
+    h+=`<details class="work" open><summary>Show the work</summary><div class="worklist">`;
+    rows.forEach(x=>{
+      h+=`<div style="margin-top:8px"><b>${esc(x.name)}</b></div>`;
+      x.parts.forEach(pt=>{h+=`<div>&nbsp;&nbsp;${esc(S.loci[pt.i])} (${S.geno[pt.i]}): ${pt.f} = ${fmtHTML(pt.v)}</div>`});
+      h+=`<div>&nbsp;&nbsp;→ ${x.parts.map(pt=>fmtHTML(pt.v)).join(" × ")} = <b>${fmtHTML(x.L)}</b></div>`;
+    });
+    h+=`</div></details>`;
+    h+=`<p class="hint" style="margin-top:12px">“Share” rescales the likelihoods so they add to 100%, assuming each region was equally likely before you looked at the genotype. Your assignment only needs the highest likelihood.</p>`;
+    out.innerHTML=h;
+  }
+
+  // ---------- practice ----------
+  function renderPractice(res){
+    const box=$("practiceBox");
+    if(!practice){box.classList.add("hidden");return}
+    box.classList.remove("hidden");
+    let h=`<b>🎯 Practice mode</b> <span class="hint">Calculate by hand, then pick the region you think wins.</span><div class="choices">`;
+    S.regions.forEach((reg,i)=>{
+      let cls="btn";
+      if(practice.guess!==null&&res){
+        const isW=res.winners.some(w=>w.name===reg.name);
+        if(i===practice.guess)cls+=isW?" right":" wrong";
+        else if(isW&&practice.revealed)cls+=" right";
+      }
+      h+=`<button class="${cls}" data-guess="${i}">${esc(reg.name)}</button>`;
+    });
+    h+=`</div>`;
+    if(practice.guess!==null&&res){
+      const ok=res.winners.some(w=>w.name===S.regions[practice.guess].name);
+      h+=`<p style="margin:10px 0 0">${ok?"✅ Correct! See the full work below.":"❌ Not quite. Compare your numbers with the work below to find where they differ."}</p>`;
+    }
+    h+=`<div class="row"><button class="btn" id="newProblem">New problem</button><button class="btn" id="exitPractice">Exit practice</button></div>`;
+    box.innerHTML=h;
+  }
+
+  function randomize(){
+    S.geno=S.loci.map(()=>["AA","Aa","aa"][Math.floor(Math.random()*3)]);
+  }
+
+  // ---------- render all ----------
+  function all(){renderBase();renderGeno();renderResults();save()}
+  function light(){renderGeno();renderResults();save()}
+
+  // ---------- events ----------
+  $("baseTable").addEventListener("input",e=>{
+    const t=e.target;
+    if(t.dataset.r!==undefined){
+      const v=t.value.trim(); const ri=+t.dataset.r, li=+t.dataset.l;
+      S.regions[ri].p[li]=v===""?"":parseFloat(v);
+      const n=S.regions[ri].p[li]; const bad=v!==""&&(isNaN(n)||n<0||n>1);
+      t.classList.toggle("bad",bad);
+      const other=mode==="p"?"q":"p";
+      t.nextElementSibling.textContent=(v===""||bad)?"":`${other} = ${r(1-n)}`;
+      renderResults();save();
+    }else if(t.dataset.region!==undefined){S.regions[+t.dataset.region].name=t.value;renderResults();save()}
+    else if(t.dataset.locus!==undefined){S.loci[+t.dataset.locus]=t.value;light()}
+  });
+  $("baseTable").addEventListener("click",e=>{
+    const t=e.target.closest("button");if(!t)return;
+    if(t.dataset.delregion!==undefined){S.regions.splice(+t.dataset.delregion,1);practice&&(practice.guess=null,practice.revealed=false);all()}
+    if(t.dataset.dellocus!==undefined){const i=+t.dataset.dellocus;S.loci.splice(i,1);S.geno.splice(i,1);S.regions.forEach(x=>x.p.splice(i,1));all()}
+  });
+  $("addRegion").onclick=()=>{S.regions.push({name:"Region "+(S.regions.length+1),p:S.loci.map(()=>"")});all()};
+  $("addLocus").onclick=()=>{S.loci.push("Locus "+(S.loci.length+1));S.geno.push("Aa");S.regions.forEach(x=>x.p.push(""));all()};
+  $("loadExample").onclick=()=>{S=clone(EXAMPLE);mode="p";$("freqMode").value="p";if(practice){practice={guess:null,revealed:false};randomize()}all()};
+  $("clearAll").onclick=()=>{S={loci:["Locus 1","Locus 2","Locus 3"],regions:[{name:"Region 1",p:["","",""]},{name:"Region 2",p:["","",""]}],geno:["Aa","Aa","Aa"]};all()};
+  $("freqMode").onchange=e=>{mode=e.target.value;all()};
+
+  $("genoBox").addEventListener("click",e=>{
+    const b=e.target.closest("button[data-g]");if(!b)return;
+    S.geno[+b.dataset.g]=b.dataset.v;
+    if(practice){practice.guess=null;practice.revealed=false}
+    light();
+  });
+  $("randGeno").onclick=()=>{randomize();if(practice){practice.guess=null;practice.revealed=false}light()};
+  $("practiceBtn").onclick=()=>{practice={guess:null,revealed:false};randomize();light()};
+  $("practiceBox").addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    if(b.id==="newProblem"){practice={guess:null,revealed:false};randomize();light();return}
+    if(b.id==="exitPractice"){practice=null;light();return}
+    if(b.dataset.guess!==undefined){practice.guess=+b.dataset.guess;practice.revealed=true;renderResults()}
+  });
+
+  // tabs
+  document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
+    ["calc","quick","ref"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==b.dataset.tab));
+  });
+
+  // quick helper
+  function quick(){
+    const p=parseFloat($("qp").value);
+    const ok=!isNaN(p)&&p>=0&&p<=1;
+    $("qp").classList.toggle("bad",!ok);
+    if(!ok){$("qq").textContent="p must be between 0 and 1";$("qcalc").innerHTML="";$("qcheck").textContent="";return}
+    const q=1-p;
+    $("qq").textContent=`q = 1 − ${r(p)} = ${r(q)}`;
+    const c=[["AA","p²",`${r(p)} × ${r(p)}`,p*p],["Aa","2pq",`2 × ${r(p)} × ${r(q)}`,2*p*q],["aa","q²",`${r(q)} × ${r(q)}`,q*q]];
+    $("qcalc").innerHTML=c.map(x=>`<div class="cell"><div class="lab">${x[0]} · ${x[1]}</div><div class="val">${r(x[3])}</div><div class="f">${x[2]}</div></div>`).join("");
+    $("qcheck").textContent=`Check: p² + 2pq + q² = ${r(p*p)} + ${r(2*p*q)} + ${r(q*q)} = ${r(p*p+2*p*q+q*q)}`;
+  }
+  $("qp").addEventListener("input",quick);
+  quick();
+
+  all();
+})();
+</script>
+</body>
+</html>
